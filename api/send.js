@@ -1,17 +1,28 @@
 const webpush = require('web-push');
 
-const MESSAGES = [
-  '일어났어? 오늘도 화이팅!',
-  '굿모닝~ 오늘 하루도 잘 보내!',
-  '일어나 일어나! 해 떴다!',
-  '오늘도 좋은 일만 가득하길 바라!',
-  '잘 잤어? 이불 밖은 위험해도 나가자!',
-  '좋은 아침! 커피 한 잔 하고 시작해~',
-  '오늘 하루도 네가 최고야!',
-  '일어날 시간이야~ 눈 떠!',
-  '굿모닝! 오늘도 힘내자!',
-  '밥 챙겨 먹고 하루 시작해!',
-];
+const INTERJECTIONS = ['애긔', '애기야', '자기야', '흐앙', '뿌우', '우쭈쭈', '냥냥', '쀼잉', '헤헹'];
+const GREETINGS = ['굳모닝', '굳뭐닝', '굿모닝', '구우웃모닝', '모닝이양', '모닝이당'];
+const WAKE_PHRASES = ['잘잤오', '일어났오', '일어났어', '자쟀어염', '일어나쒀', '눈떴오'];
+
+function pick(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function randomPunct() {
+  const chars = ['?', '!'];
+  const length = Math.floor(Math.random() * 4) + 1;
+  let out = '';
+  for (let i = 0; i < length; i++) out += pick(chars);
+  return out;
+}
+
+function buildMessage() {
+  const interj = pick(INTERJECTIONS);
+  const greeting = pick(GREETINGS);
+  const wake1 = pick(WAKE_PHRASES);
+  const wake2 = pick(WAKE_PHRASES);
+  return `${interj}! ${greeting}, ${wake1}${randomPunct()}, ${wake2}${randomPunct()}`;
+}
 
 module.exports = async (req, res) => {
   if (process.env.CRON_SECRET) {
@@ -35,7 +46,7 @@ module.exports = async (req, res) => {
     process.env.VAPID_PRIVATE_KEY
   );
 
-  const body = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
+  const body = buildMessage();
 
   const payload = JSON.stringify({
     title: '먕먕이',

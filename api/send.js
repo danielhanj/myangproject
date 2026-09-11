@@ -46,8 +46,10 @@ module.exports = async (req, res) => {
     process.env.VAPID_PRIVATE_KEY
   );
 
+  const customText = req.query && req.query.text;
+
   const payload = JSON.stringify({
-    title: buildMessage(),
+    title: customText || buildMessage(),
     icon: '/icon-kakao.png',
   });
 

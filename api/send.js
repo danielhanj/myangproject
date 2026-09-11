@@ -46,11 +46,8 @@ module.exports = async (req, res) => {
     process.env.VAPID_PRIVATE_KEY
   );
 
-  const body = buildMessage();
-
   const payload = JSON.stringify({
-    title: '먕먕이',
-    body,
+    title: buildMessage(),
     icon: '/icon-kakao.png',
   });
 

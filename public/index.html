@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>먕먕이</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-kakao.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="먕먕이">
+<meta name="theme-color" content="#FEE500">
+<style>
+  body { font-family: -apple-system, sans-serif; padding: 24px; background:#FEE500; }
+  button { font-size:18px; padding:14px 20px; border-radius:12px; border:none; background:#391B1B; color:white; width:100%; }
+  textarea { width:100%; height:160px; margin-top:16px; font-size:12px; box-sizing:border-box; }
+  p { line-height:1.5; }
+</style>
+</head>
+<body>
+  <h2>먕먕이 알림 설정</h2>
+  <p>1. 공유 버튼 → "홈 화면에 추가"로 저장하세요.<br>
+     2. 홈 화면에 생긴 아이콘으로 이 앱을 다시 여세요 (사파리 탭 말고 꼭 아이콘으로).<br>
+     3. 아래 버튼을 눌러 알림을 허용하세요.</p>
+  <button id="enable">알림 켜기</button>
+  <p id="status"></p>
+  <textarea id="output" readonly placeholder="여기에 구독 정보가 표시됩니다. 전체 선택해서 복사한 뒤 전달해주세요."></textarea>
+
+<script>
+const VAPID_PUBLIC_KEY = "BG-ygWaW4epg8ApDPF_-pCdQmG_nTHqI3RpFvlZCPPwYZ-yk8R_OZpeMi8VXt-jewFZKaqe9DiBQN8JKcn8BezU";
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
+
+document.getElementById('enable').addEventListener('click', async () => {
+  const status = document.getElementById('status');
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      status.textContent = '이 브라우저/모드에서는 알림을 지원하지 않습니다. 홈 화면 아이콘으로 열었는지 확인하세요.';
+      return;
+    }
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      status.textContent = '알림 권한이 거부되었습니다.';
+      return;
+    }
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    document.getElementById('output').value = JSON.stringify(sub);
+    status.textContent = '완료! 아래 텍스트 전체를 복사해서 전달하세요.';
+  } catch (err) {
+    status.textContent = '오류: ' + err.message;
+  }
+});
+</script>
+</body>
+</html>
